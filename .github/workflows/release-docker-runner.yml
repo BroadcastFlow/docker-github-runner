@@ -1,0 +1,58 @@
+name: Build GitHub Runner Docker Image
+
+on:
+  schedule:
+    - cron: '30 9 * * 1-5'  # This will run the action at 9:30 am every day from Monday to Friday
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Check latest runner version
+      run: |
+        LATEST_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | jq -r .tag_name)
+        echo "LATEST_VERSION=${LATEST_VERSION}" >> $GITHUB_ENV
+
+    - name: Get latest release version from repo
+      run: |
+        LATEST_RELEASE=$(git describe --tags `git rev-list --tags --max-count=1`)
+        echo "LATEST_RELEASE=${LATEST_RELEASE}" >> $GITHUB_ENV
+
+    - name: Compare versions
+      run: |
+        if [[ "${LATEST_VERSION}" == "${LATEST_RELEASE}" ]]; then
+          echo "The latest version is already built. Skipping build."
+          echo "BUILD=false" >> $GITHUB_ENV
+        else
+          echo "A new version is available. Proceeding with build."
+          echo "BUILD=true" >> $GITHUB_ENV
+        fi
+
+    - name: Set up Docker Buildx
+      if: env.BUILD == 'true'
+      uses: docker/setup-buildx-action@v1
+
+    - name: Build and push Docker image
+      if: env.BUILD == 'true'
+      uses: docker/build-push-action@v4
+      with:
+        push: true
+        tags: your-docker-username/github-runner:${{ env.LATEST_VERSION }}
+        build-args: RUNNER_VERSION=${{ env.LATEST_VERSION }}
+
+    - name: Create GitHub release
+      if: env.BUILD == 'true'
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.LATEST_VERSION }}
+        release_name: GitHub Runner Docker Image ${{ env.LATEST_VERSION }}
+        body: Docker image for GitHub Runner version ${{ env.LATEST_VERSION }}.
+        draft: false
+        prerelease: false
