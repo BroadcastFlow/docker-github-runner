@@ -11,7 +11,7 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
 
     - name: Check latest runner version
       run: |
@@ -20,7 +20,10 @@ jobs:
 
     - name: Get latest release version from repo
       run: |
-        LATEST_RELEASE=$(git describe --tags `git rev-list --tags --max-count=1`)
+        LATEST_RELEASE=$(git describe --tags `git rev-list --tags --max-count=1` 2>&1)
+        if [[ $LATEST_RELEASE == "fatal:"* ]]; then
+          LATEST_RELEASE="0.0.0"
+        fi
         echo "LATEST_RELEASE=${LATEST_RELEASE}" >> $GITHUB_ENV
 
     - name: Compare versions
