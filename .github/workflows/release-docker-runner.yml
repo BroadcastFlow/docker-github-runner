@@ -20,11 +20,14 @@ jobs:
 
     - name: Get latest release version from repo
       run: |
-        LATEST_RELEASE=$(git describe --tags `git rev-list --tags --max-count=1` 2>&1)
-        if [[ $LATEST_RELEASE == "fatal:"* ]]; then
+        LATEST_TAG_HASH=$(git rev-list --tags --max-count=1 || echo "")
+        if [ -z "$LATEST_TAG_HASH" ]; then
           LATEST_RELEASE="0.0.0"
+        else
+          LATEST_RELEASE=$(git describe --tags $LATEST_TAG_HASH)
         fi
         echo "LATEST_RELEASE=${LATEST_RELEASE}" >> $GITHUB_ENV
+
 
     - name: Compare versions
       run: |
