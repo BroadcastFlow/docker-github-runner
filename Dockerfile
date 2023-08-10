@@ -7,6 +7,11 @@ ARG RUNNER_VERSION="2.307.1"
 # update the base packages and add a non-sudo user
 RUN apt-get update -y && apt-get upgrade -y && useradd -m docker
 
+# Set timezone to Europe/Dublin and prevent prompts
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tzdata && \
+    ln -fs /usr/share/zoneinfo/Europe/Dublin /etc/localtime && \
+    dpkg-reconfigure --frontend noninteractive tzdata
+
 # install python and the packages the your code depends on along with jq so we can parse JSON
 # add additional packages as necessary
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
