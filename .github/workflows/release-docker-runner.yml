@@ -19,6 +19,9 @@ jobs:
       run: |
         LATEST_VERSION=$(curl -s https://api.github.com/repos/actions/runner/releases/latest | jq -r .tag_name)
         echo "LATEST_VERSION=${LATEST_VERSION}" >> $GITHUB_ENV
+        # Remove the 'v' from the version number
+        LATEST_VERSION_CLEAN=${LATEST_VERSION#v}
+        echo "LATEST_VERSION_CLEAN=${LATEST_VERSION_CLEAN}" >> $GITHUB_ENV
 
     - name: Get latest release version from repo
       run: |
@@ -60,7 +63,7 @@ jobs:
       with:
         push: true
         tags: ghcr.io/${{ github.repository_owner }}/github-runner:${{ env.LATEST_VERSION }}
-        build-args: RUNNER_VERSION=${{ env.LATEST_VERSION }}
+        build-args: RUNNER_VERSION=${{ env.LATEST_VERSION_CLEAN }}
 
     - name: Create GitHub release
       if: env.BUILD == 'true'
