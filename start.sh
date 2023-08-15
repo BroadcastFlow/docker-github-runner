@@ -14,4 +14,4 @@ cleanup() {
 trap 'cleanup; exit 130' INT
 trap 'cleanup; exit 143' TERM
 
-./run.sh & sudo ./svc.sh install & sudo ./svc.sh start & wait $!
+./run.sh & wait $!
