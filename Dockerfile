@@ -17,7 +17,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     curl jq build-essential libssl-dev libffi-dev python3 python3-venv python3-dev python3-pip sudo
 
 # Allow the docker user to run the svc.sh script without a password
-RUN echo "docker ALL=NOPASSWD: /home/docker/actions-runner/svc.sh" >> /etc/sudoers
+RUN echo "docker ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # Download and setup the GitHub runner
 RUN cd /home/docker && mkdir actions-runner && cd actions-runner \
